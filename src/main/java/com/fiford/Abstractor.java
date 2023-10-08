@@ -1,151 +1,68 @@
 package com.fiford;
 
-import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class Abstractor<T, MSG> {
-    Mailbox<MSG> mbox = new Mailbox<>();
-    final Thread stage;
+public abstract class Abstractor<T,MSG>  {
+    public static class ActorMailbox {
+         final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+         final AtomicInteger queued = new AtomicInteger(0);
+    }
+
+    //static final BlockingQueue<Runnable> workqueue = new LinkedBlockingQueue<>();
+    static ExecutorService executor = Executors.newCachedThreadPool(Thread.ofVirtual().factory());
+    //static final ThreadPoolExecutor executor = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 4, TimeUnit.MILLISECONDS, workqueue, Thread.ofVirtual().factory());
     T instance;
+    ActorMailbox mbox = new ActorMailbox();
+    AtomicBoolean alive = new AtomicBoolean(true);
 
     Abstractor(T instance) {
         this.instance = instance;
-        stage = Thread.ofVirtual().factory().newThread(getRuntime());
-        stage.start();
-    }
-
-    Mailbox<MSG> getMailbox() {
-        return mbox;
     }
 
     abstract void tell(MSG msg);
-
-    abstract Runnable getRuntime();
 
     T getInstance() {
         return instance;
     }
 
-    boolean alive() {
-        return stage.isAlive();
-    }
-
     boolean kill() {
-        stage.interrupt();
-        return !alive();
+        return alive.getAndSet(false);
     }
 
-    public record Msg<REQ, REP>(REQ req, REP rep) {
+    
+    public static abstract class MessageActorClass<MESSAGE>  {     
+        ActorRef<MESSAGE> ref;
+        
+        public ActorRef<MESSAGE> self() {
+            return ref;
+        }
+        
+        public abstract void recieve(MESSAGE msg, ActorRef<MESSAGE> sender);
+        
+        public abstract void recieve(Throwable e, ActorRef<MESSAGE> sender);
     }
 
-    public static class MessageActor<REQUEST, REPLY>
-            extends Abstractor<BiConsumer<REQUEST, Mailbox<REPLY>>, Msg<REQUEST, Mailbox<REPLY>>> {
-
-        Runnable getRuntime() {
-            return () -> {
-                while (true) {
-                    Msg<REQUEST, Mailbox<REPLY>> msg = null;
-                    try {
-                        msg = getMailbox().take();
-                        instance.accept(msg.req(), msg.rep());
-                    } catch (InterruptedException e) {
-                        return;
-                    } catch (Throwable t) {
-                        if (msg != null)
-                            msg.rep().addException(t);
-                    }
-                }
-            };
-        }
-
-        public MessageActor(BiConsumer<REQUEST, Mailbox<REPLY>> instance) {
-            super(instance);
-        }
-
-        Mailbox<REPLY> ask(REQUEST msg) {
-            Mailbox<REPLY> replyTo = new Mailbox<>();
-            mbox.add(new Msg<REQUEST, Mailbox<REPLY>>(msg, replyTo));
-            return replyTo;
-        }
-
-        @Override
-        void tell(Msg<REQUEST, Mailbox<REPLY>> msg) {
-            mbox.add(msg);
-        }
+    void submit(Runnable r) {
+        //add effectively is always true, only start a new task process if we not already processing
+        if (!alive.get() 
+        || mbox.queue.add(r) && mbox.queued.getAndIncrement() != 0) return;
+        Abstractor.executor.submit(run());
     }
 
-    public static class Mailbox<T> {
-
-        final AtomicReference<Throwable> error = new AtomicReference<>();
-        final LinkedBlockingQueue<T> content = new LinkedBlockingQueue<>();
-
-        void add(T e) {
-            content.add(e);
-        }
-
-        void addException(Throwable t) {
-            error.set(t);
-            add(null);
-        }
-
-        public Optional<T> recieve() {
-            try {
-                return Optional.of(content.take());
-            } catch (InterruptedException e) {
-                if (error.get() == null)
-                    error.set(e);
-                return Optional.empty();
+    Runnable run() {
+        return () -> {
+            for(int i = 0; i < 10; i++) {
+                Runnable run;
+                if((run = mbox.queue.poll()) == null) return;
+                run.run();
+                mbox.queued.decrementAndGet();
             }
-        }
-
-        T take() throws InterruptedException {
-            return content.take();
-        }
-    }
-
-    public static class TypedActor<T> extends Abstractor<T, Consumer<T>> {
-
-        public TypedActor(T instance) {
-            super(instance);
-        }
-
-        public void tell(Consumer<T> action) {
-            mbox.add(action);
-        }
-
-        public <R> Mailbox<R>  tell(Function<T, R> action, Mailbox<R>  replyTo) {
-            mbox.add(t -> {
-                try {
-                    replyTo.add(action.apply(t));
-                } catch (Throwable e) {
-                    replyTo.addException(e);
-                }
-            });
-            return replyTo;
-        }
-
-        public <R> Mailbox<R> tell(Function<T, R> action) {
-            return tell(action, new Mailbox<>());
-        }
-
-        @Override
-        Runnable getRuntime() {
-            return () -> {
-                while (true) {
-                    try {
-                        getMailbox().take().accept(getInstance());
-
-                    } catch (InterruptedException e) {
-                        return;
-                    } catch (Throwable t) {
-
-                    }
-                }
-            };
-        }
+            if(!mbox.queue.isEmpty()) Abstractor.executor.submit(run());
+        };
     }
 }
