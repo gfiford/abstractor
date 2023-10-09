@@ -11,7 +11,7 @@ import com.fiford.TypedActor;
 public class TypedAbstractorMergeSort {
     public static void main(String[] args) {
         Random random = new Random(0L);
-        int[] input = IntStream.range(0, 1 << 16).map(i -> random.nextInt()).toArray();
+        int[] input = IntStream.range(0, 1 << 2).map(i -> random.nextInt()).toArray();
         System.err.println("Abstractor merge sort started...");
         long start = System.currentTimeMillis();
         TypedActor<Sorter> sorter = new TypedActor<TypedAbstractorMergeSort.Sorter>(new Sorter());

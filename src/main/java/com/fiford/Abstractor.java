@@ -7,15 +7,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class Abstractor<T,MSG>  {
+public abstract class Abstractor<T>  {
+
     public static class ActorMailbox {
          final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
          final AtomicInteger queued = new AtomicInteger(0);
     }
 
-    //static final BlockingQueue<Runnable> workqueue = new LinkedBlockingQueue<>();
+
     static ExecutorService executor = Executors.newCachedThreadPool(Thread.ofVirtual().factory());
-    //static final ThreadPoolExecutor executor = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 4, TimeUnit.MILLISECONDS, workqueue, Thread.ofVirtual().factory());
+    
     T instance;
     ActorMailbox mbox = new ActorMailbox();
     AtomicBoolean alive = new AtomicBoolean(true);
@@ -24,27 +25,12 @@ public abstract class Abstractor<T,MSG>  {
         this.instance = instance;
     }
 
-    abstract void tell(MSG msg);
-
     T getInstance() {
         return instance;
     }
 
     boolean kill() {
         return alive.getAndSet(false);
-    }
-
-    
-    public static abstract class MessageActorClass<MESSAGE>  {     
-        ActorRef<MESSAGE> ref;
-        
-        public ActorRef<MESSAGE> self() {
-            return ref;
-        }
-        
-        public abstract void recieve(MESSAGE msg, ActorRef<MESSAGE> sender);
-        
-        public abstract void recieve(Throwable e, ActorRef<MESSAGE> sender);
     }
 
     void submit(Runnable r) {

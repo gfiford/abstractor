@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import com.fiford.Abstractor.MessageActorClass;
 import com.fiford.ActorRef;
 import com.fiford.MessageActor;
+import com.fiford.MessageReciever;
 
 public class MessageAbstractorMergeSort {
     public static void main(String[] args) {
@@ -26,20 +26,21 @@ public class MessageAbstractorMergeSort {
         }
     }
 
-    private static class Sorter extends MessageActorClass<SortMessage> {
+    private static class Sorter implements MessageReciever<SortMessage> {
 
         private int side;
         private int[][] res = new int[2][];
         private ActorRef<SortMessage> upstream;
 
+
         Sorter(int side) {
             this.side = side;
         }
 
-        void request(SortMessage m, ActorRef<SortMessage> u) {
+        void request(SortMessage m, ActorRef<SortMessage> u, ActorRef<SortMessage> self) {
             this.upstream = u;
             if (m.value.length == 1) {
-                sendReply(m.value);
+                sendReply(m.value, self);
                 return;
             }
 
@@ -49,21 +50,20 @@ public class MessageAbstractorMergeSort {
             MessageActor<SortMessage> a = new MessageActor<>(new Sorter(0));
             MessageActor<SortMessage> b = new MessageActor<>(new Sorter(1));
 
-            a.tell(new SortMessage(SortMessage.Type.REQUEST, left, 0), self());
-            b.tell(new SortMessage(SortMessage.Type.REQUEST, right, 1), self());
-
+            a.tell(new SortMessage(SortMessage.Type.REQUEST, left, 0), self);
+            b.tell(new SortMessage(SortMessage.Type.REQUEST, right, 1), self);
         }
 
-        void reply(SortMessage m) {
+        void reply(SortMessage m, ActorRef<SortMessage> self) {
             res[m.side] = m.value;
             if (res[0] != null && res[1] != null) {
                 int[] resultarray = merge(res[0], res[1]);
-                sendReply(resultarray);
+                sendReply(resultarray, self);
             }
         }
 
-        private void sendReply(int[] resultarray) {
-            upstream.tell(new SortMessage(SortMessage.Type.REPLY, resultarray, side), self());
+        private void sendReply(int[] resultarray, ActorRef<SortMessage> self) {
+            upstream.tell(new SortMessage(SortMessage.Type.REPLY, resultarray, side), self);
         }
 
         public static int[] merge(int[] a, int[] b) {
@@ -75,19 +75,14 @@ public class MessageAbstractorMergeSort {
         }
 
         @Override
-        public void recieve(Throwable e, ActorRef<SortMessage> sender) {
-            e.printStackTrace();
-        }
-
-        @Override
-        public void recieve(SortMessage msg, ActorRef<SortMessage> sender) {
+        public void recieve(SortMessage msg, ActorRef<SortMessage> sender, ActorRef<SortMessage> self) {
             SortMessage.Type type = msg.type;
             switch (type) {
                 case REQUEST:
-                    request(msg, sender);
+                    request(msg, sender, self);
                     break;
                 case REPLY:
-                    reply(msg);
+                    reply(msg, self);
                     break;
             }
         }
