@@ -13,7 +13,7 @@ public class AkkaMergeSort {
 
 	public static void main(String[] args) throws InterruptedException {
 		Random random = new Random(0L);
-		int[] input = IntStream.range(0, 1 << 16).map(i -> random.nextInt()).toArray();
+		int[] input = IntStream.range(0, 1 << 18).map(i -> random.nextInt()).toArray();
 		System.err.println("AKKA merge sort started...");
 		long start = System.currentTimeMillis();
 		sort(input);

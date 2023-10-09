@@ -10,7 +10,7 @@ import com.fiford.MessageReciever;
 
 public class MessageAbstractorMergeSort {
     public static void main(String[] args) {
-      Random random = new Random(0L);
+        Random random = new Random(0L);
         int[] input = IntStream.range(0, 1 << 20).map(i -> random.nextInt()).toArray();
         System.err.println("Abstractor merge sort started...");
         long start = System.currentTimeMillis();
@@ -32,12 +32,11 @@ public class MessageAbstractorMergeSort {
         private int[][] res = new int[2][];
         private ActorRef<SortMessage> upstream;
 
-
         Sorter(int side) {
             this.side = side;
         }
 
-        void request(SortMessage m, ActorRef<SortMessage> u, ActorRef<SortMessage> self) {
+        void request(SortMessage m, ActorRef<SortMessage> u, MessageActor<SortMessage> self) {
             this.upstream = u;
             if (m.value.length == 1) {
                 sendReply(m.value, self);
@@ -47,15 +46,23 @@ public class MessageAbstractorMergeSort {
             int[] left = Arrays.copyOfRange(m.value, 0, m.value.length / 2);
             int[] right = Arrays.copyOfRange(m.value, m.value.length / 2, m.value.length);
 
-            MessageActor<SortMessage> a = new MessageActor<>(new Sorter(0));
-            MessageActor<SortMessage> b = new MessageActor<>(new Sorter(1));
+            sendSide(self, left, 0);
+            sendSide(self, right, 1);
 
-            a.tell(new SortMessage(SortMessage.Type.REQUEST, left, 0), self);
-            b.tell(new SortMessage(SortMessage.Type.REQUEST, right, 1), self);
         }
 
-        void reply(SortMessage m, ActorRef<SortMessage> self) {
-            res[m.side] = m.value;
+        private void sendSide(ActorRef<SortMessage> self, int[] arr, int sde) {
+            if (arr.length == 1) {
+                // no need to send we know the reply
+                reply(arr, sde, self);
+            } else {
+                MessageActor<SortMessage> a = new MessageActor<>(new Sorter(sde));
+                a.tell(new SortMessage(SortMessage.Type.REQUEST, arr, sde), self);
+            }
+        }
+
+        void reply(int[] arr, int sde, ActorRef<SortMessage> self) {
+            res[sde] = arr;
             if (res[0] != null && res[1] != null) {
                 int[] resultarray = merge(res[0], res[1]);
                 sendReply(resultarray, self);
@@ -75,14 +82,14 @@ public class MessageAbstractorMergeSort {
         }
 
         @Override
-        public void recieve(SortMessage msg, ActorRef<SortMessage> sender, ActorRef<SortMessage> self) {
+        public void recieve(SortMessage msg, ActorRef<SortMessage> sender, MessageActor<SortMessage> self) {
             SortMessage.Type type = msg.type;
             switch (type) {
                 case REQUEST:
                     request(msg, sender, self);
                     break;
                 case REPLY:
-                    reply(msg, self);
+                    reply(msg.value, msg.side, self);
                     break;
             }
         }

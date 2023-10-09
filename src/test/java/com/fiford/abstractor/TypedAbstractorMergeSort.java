@@ -11,7 +11,7 @@ import com.fiford.TypedActor;
 public class TypedAbstractorMergeSort {
     public static void main(String[] args) {
         Random random = new Random(0L);
-        int[] input = IntStream.range(0, 1 << 2).map(i -> random.nextInt()).toArray();
+        int[] input = IntStream.range(0, 1 << 20).map(i -> random.nextInt()).toArray();
         System.err.println("Abstractor merge sort started...");
         long start = System.currentTimeMillis();
         TypedActor<Sorter> sorter = new TypedActor<TypedAbstractorMergeSort.Sorter>(new Sorter());
@@ -23,22 +23,21 @@ public class TypedAbstractorMergeSort {
     private static class Sorter {
 
         public int[] run(int[] array) {
+            if (array.length == 1) return array;
+
+            final int[] left = Arrays.copyOfRange(array, 0, array.length / 2);
+            final int[] right = Arrays.copyOfRange(array, array.length / 2, array.length);
+
+            if (array.length == 2) return merge(left, right);
             
-            if (array.length == 1)
-             return array;
-            else {
+            TypedActor<Sorter> a = new TypedActor<>(new Sorter());
+            TypedActor<Sorter> b = new TypedActor<>(new Sorter());
 
-                final int[] left = Arrays.copyOfRange(array, 0, array.length / 2);
-                final int[] right = Arrays.copyOfRange(array, array.length / 2, array.length);
-
-                TypedActor<Sorter> a = new TypedActor<>(new Sorter());
-                TypedActor<Sorter> b = new TypedActor<>(new Sorter());
-
-                Mailbox<int[]> lBox =  a.ask(s -> s.run(left));
-                Mailbox<int[]> rBox =  b.ask(s -> s.run(right));
+            Mailbox<int[]> lBox =  a.ask(s -> s.run(left));
+            Mailbox<int[]> rBox =  b.ask(s -> s.run(right));
                 
-                return merge(lBox.recieve().get() , rBox.recieve().get());
-            }
+            return merge(lBox.recieve().get() , rBox.recieve().get());
+            
         }
 
         public static int[] merge(int[] a, int[] b) {

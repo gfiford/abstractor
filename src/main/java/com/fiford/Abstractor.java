@@ -3,19 +3,44 @@ package com.fiford;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
 
 public abstract class Abstractor<T>  {
 
     public static class ActorMailbox {
          final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
          final AtomicInteger queued = new AtomicInteger(0);
+         
+         boolean isEmpty() {
+            return queued.get() == 0;
+         }
+
+         boolean run() {
+            if (isEmpty()) return false;
+            Runnable task = queue.poll();
+            if (task == null) return false;
+            try {
+                task.run();
+            } finally {
+                queued.decrementAndGet();    
+            }
+            return true;
+         }
+
+
     }
 
 
-    static ExecutorService executor = Executors.newCachedThreadPool(Thread.ofVirtual().factory());
+    static ExecutorService executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                      10L, TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<>(),
+                                      Thread.ofVirtual().factory());
     
     T instance;
     ActorMailbox mbox = new ActorMailbox();
@@ -33,7 +58,11 @@ public abstract class Abstractor<T>  {
         return alive.getAndSet(false);
     }
 
-    void submit(Runnable r) {
+    public void apply(Consumer<T> consumer) {
+        submit(() -> consumer.accept(instance));
+    }
+
+    public void submit(Runnable r) {
         //add effectively is always true, only start a new task process if we not already processing
         if (!alive.get() 
         || mbox.queue.add(r) && mbox.queued.getAndIncrement() != 0) return;
@@ -42,13 +71,14 @@ public abstract class Abstractor<T>  {
 
     Runnable run() {
         return () -> {
-            for(int i = 0; i < 10; i++) {
-                Runnable run;
-                if((run = mbox.queue.poll()) == null) return;
-                run.run();
-                mbox.queued.decrementAndGet();
-            }
-            if(!mbox.queue.isEmpty()) Abstractor.executor.submit(run());
+            int i = 0;
+            while (i++ < 10 && alive.get() && mbox.run());
+            if(!mbox.isEmpty()) Abstractor.executor.submit(run());
         };
+    }
+
+    public static void awaitComplete() {
+        LockSupport.parkNanos(1000*1000);//anything just submitted time to get on the executor
+        while(((ThreadPoolExecutor) executor).getPoolSize() != 0) LockSupport.parkNanos(1000*1000);        
     }
 }

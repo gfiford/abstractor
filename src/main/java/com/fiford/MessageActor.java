@@ -16,7 +16,7 @@ public class MessageActor<MESSAGE> extends Abstractor<MessageReciever<MESSAGE>> 
 
     @Override
     public void tell(MESSAGE msg, ActorRef<MESSAGE> sender) {
-        final ActorRef<MESSAGE> self = this; 
+        final MessageActor<MESSAGE> self = this; 
         tell(ma -> ma.recieve(msg, sender, self));
     }
 
