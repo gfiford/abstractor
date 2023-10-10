@@ -11,7 +11,7 @@ import com.fiford.MessageReciever;
 public class MessageAbstractorMergeSort {
     public static void main(String[] args) {
         Random random = new Random(0L);
-        int[] input = IntStream.range(0, 1 << 20).map(i -> random.nextInt()).toArray();
+        int[] input = IntStream.range(0, 1 << 16).map(i -> random.nextInt()).toArray();
         System.err.println("Abstractor merge sort started...");
         long start = System.currentTimeMillis();
         MessageActor<SortMessage> messageActor = new MessageActor<>(new Sorter(-1));

@@ -3,7 +3,7 @@ package com.fiford;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,7 +39,7 @@ public abstract class Abstractor<T>  {
 
     static ExecutorService executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                                       10L, TimeUnit.MILLISECONDS,
-                                      new LinkedBlockingQueue<>(),
+                                      new SynchronousQueue<>(),
                                       Thread.ofVirtual().factory());
     
     T instance;
