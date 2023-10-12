@@ -32,10 +32,7 @@ public abstract class Abstractor<T>  {
             }
             return true;
          }
-
-
     }
-
 
     static ExecutorService executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
                                       10L, TimeUnit.MILLISECONDS,
