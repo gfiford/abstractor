@@ -21,8 +21,7 @@ public abstract class Abstractor<T> {
         void tell(T msg, ActorRef<T> sender);
 
         static <T> ActorRef<T> noSender() {
-            return (msg, sender) -> {
-            };
+            return (msg, sender) -> {};
         }
     }
 
@@ -86,14 +85,14 @@ public abstract class Abstractor<T> {
 
         public Optional<T> recieve() {
             try {
-                return Optional.of(take());
+                return Optional.of(content.take());
             } catch (InterruptedException e) {
                 return Optional.empty();
             }
         }
 
-        T take() throws InterruptedException {
-            return content.take();
+        T poll(long timeout, TimeUnit unit) throws InterruptedException {
+            return content.poll(timeout, unit);
         }
 
         @Override
