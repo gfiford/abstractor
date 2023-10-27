@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import com.fiford.Mailbox;
-import com.fiford.TypedActor;
+import com.fiford.Abstractor.Mailbox;
+import com.fiford.Abstractor.TypedActor;
 
 
 public class TypedAbstractorMergeSort {

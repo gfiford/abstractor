@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import com.fiford.ActorRef;
-import com.fiford.MessageActor;
-import com.fiford.MessageReciever;
+import com.fiford.Abstractor.ActorRef;
+import com.fiford.Abstractor.MessageActor;
+import com.fiford.Abstractor.MessageReciever;
 
 public class MessageAbstractorMergeSort {
     public static void main(String[] args) {

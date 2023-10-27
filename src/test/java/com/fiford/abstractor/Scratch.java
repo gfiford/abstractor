@@ -1,9 +1,9 @@
 package com.fiford.abstractor;
 
 import com.fiford.Abstractor;
-import com.fiford.ActorRef;
-import com.fiford.MessageActor;
-import com.fiford.MessageReciever;
+import com.fiford.Abstractor.ActorRef;
+import com.fiford.Abstractor.MessageActor;
+import com.fiford.Abstractor.MessageReciever;
 
 public class Scratch {
 
