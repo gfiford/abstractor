@@ -5,7 +5,9 @@
 - [Configuration Reference](https://docs.micronaut.io/4.2.2/guide/configurationreference.html)
 - [Micronaut Guides](https://guides.micronaut.io/index.html)
 ---
-
+## Build Native
+Only with graalvm
+./mvnw package -Dpackaging=native-image
 - [Micronaut Maven Plugin documentation](https://micronaut-projects.github.io/micronaut-maven-plugin/latest/)
 ## Feature serialization-jackson documentation
 
