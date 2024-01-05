@@ -1,0 +1,1 @@
+mvn -Pnative native:compile

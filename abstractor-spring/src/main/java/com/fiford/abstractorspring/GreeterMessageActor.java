@@ -1,10 +1,10 @@
-package com.fiford;
+package com.fiford.abstractorspring;
+
+import org.springframework.stereotype.Service;
 
 import com.fiford.Abstractor.MessageActor;
 
-import jakarta.inject.Singleton;
-
-@Singleton
+@Service
 public class GreeterMessageActor extends MessageActor<String> {
  
 
