@@ -1,0 +1,1 @@
+mvn -DskipTests -Pnative native:compile
