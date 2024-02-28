@@ -12,20 +12,4 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
-    <dependencies>
-        <dependency>
-            <artifactId>actr</artifactId>
-            <groupId>com.github.zakgof</groupId>
-            <version>0.4.2</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <artifactId>akka-actor_2.12</artifactId>
-            <groupId>com.typesafe.akka</groupId>
-            <version>2.5.21</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
 </project>
