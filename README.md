@@ -1,4 +1,4 @@
-= Abstrator =
+Abstrator
 ---
 The purpose of Abstract Virtual Actors is to provide a very slim pure java implementation of actor based concurrency.
 
