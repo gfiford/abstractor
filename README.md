@@ -1,9 +1,10 @@
-#Abstrator
+# Abstrator
 
 The purpose of Abstract Virtual Actors is to provide a very slim pure java implementation of actor based concurrency.
 
+---
 
-##Desgin goals
+## Desgin goals
 1. No dependencies  - Only use native java imports
 2. Ultra Slim - Keep all required source to one file, with minimal length for easy analysis. This is so the code is easily auditable and can be included by copying one file into w project
 3. Typed - Strong typing by design, to allow call heirarchy analysis, no suprise messages,and pure java actors
@@ -15,9 +16,11 @@ The purpose of Abstract Virtual Actors is to provide a very slim pure java imple
 9. Generic - Just as the java collections library demonstrates the ability to sperate the behaviour of collections from their contents, message actors and typed actors are purely generic.
 10. Performant - Requiring java21 with virtual threads consciously for the simplicity of memorybeing the limit on thread state, almost zero cost concurrency. No need for choices around actor execution environment.
 
-##Origin
+## Origin
 This library takes inspriation from previous actor systems, and leans heavily on work already done especially from many years using akka in a commercial context and being inspired by https://github.com/zakgof/actr as to what could be done. I have borrowed much of the test casese from actr.
 
+## Examples
 There are examples for a few major frameworks that lack any kind of actor like abstraction. Inside the test project are some examples of how it can be used.
 
+## Go Play
 It is a one file library, feel free to extend, by design it is intended to be extended and is designed to lend itself to abstraction, the name is a portmanteau of Abstractor and Actor.
