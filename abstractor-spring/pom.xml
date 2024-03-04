@@ -31,7 +31,7 @@
 		<dependency>
 			<artifactId>abstractor-core</artifactId>
 			<groupId>com.fiford</groupId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
