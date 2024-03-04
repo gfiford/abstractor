@@ -11,6 +11,7 @@ public class AkkaSharedState {
 	
 	public static void main(String[] args) throws InterruptedException {
 
+        long start = System.currentTimeMillis();
 		final ActorSystem system = ActorSystem.create("akka-shared");
 		final ActorRef runner = system.actorOf(Runner.props(), "runner");
 		
@@ -18,6 +19,8 @@ public class AkkaSharedState {
 			runner.tell(i, ActorRef.noSender());
 		}
 		system.getWhenTerminated().toCompletableFuture().join();
+
+        System.out.println(" in  "+ (System.currentTimeMillis() - start));
 	}
 
 	private static class Runner extends AbstractActor {
@@ -41,6 +44,7 @@ public class AkkaSharedState {
 				System.err.println("OVERFLOW");
 			if (counter == ACTORS) {
 				System.err.println("Reached goal");
+				getContext().getSystem().terminate();
 			}
 		}
 	}

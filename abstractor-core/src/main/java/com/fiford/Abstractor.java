@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.Optional;
@@ -162,11 +161,5 @@ public abstract class Abstractor<T> {
             while (i++ < 10 && alive.get() && mbox.run());
             if (!mbox.isEmpty()) Abstractor.executor.submit(run());
         };
-    }
-
-    public static void awaitComplete() {
-        LockSupport.parkNanos(1000 * 1000);// anything just submitted time to get on the executor
-        while (((ThreadPoolExecutor) executor).getPoolSize() != 0)
-            LockSupport.parkNanos(1000 * 1000);
     }
 }

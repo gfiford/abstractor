@@ -8,7 +8,8 @@ import com.fiford.Abstractor.ActorRef;
 import com.fiford.Abstractor.MessageActor;
 import com.fiford.Abstractor.MessageReciever;
 
-public class MessageAbstractorMergeSort {
+public class AbstractorMergeSort {
+
     public static void main(String[] args) {
         Random random = new Random(0L);
         int[] input = IntStream.range(0, 1 << 16).map(i -> random.nextInt()).toArray();

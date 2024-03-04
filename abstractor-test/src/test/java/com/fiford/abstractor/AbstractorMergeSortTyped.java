@@ -8,13 +8,13 @@ import com.fiford.Abstractor.Mailbox;
 import com.fiford.Abstractor.TypedActor;
 
 
-public class TypedAbstractorMergeSort {
+public class AbstractorMergeSortTyped {
     public static void main(String[] args) {
         Random random = new Random(0L);
         int[] input = IntStream.range(0, 1 << 16).map(i -> random.nextInt()).toArray();
         System.err.println("Abstractor merge sort started...");
         long start = System.currentTimeMillis();
-        TypedActor<Sorter> sorter = new TypedActor<TypedAbstractorMergeSort.Sorter>(new Sorter());
+        TypedActor<Sorter> sorter = new TypedActor<>(new Sorter());
         sorter.ask(s -> s.run(input)).recieve().get();
         long end = System.currentTimeMillis();
         System.err.println("finished in " + (end - start));
