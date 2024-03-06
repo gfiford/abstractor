@@ -82,6 +82,10 @@ public abstract class Abstractor<T> {
             content.add(mesg);
         }
 
+        public boolean isEmpty() {
+            return content.isEmpty();
+        }
+
         public Optional<T> recieve() {
             try {
                 return Optional.of(content.take());
